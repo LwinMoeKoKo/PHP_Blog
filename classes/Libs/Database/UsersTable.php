@@ -136,7 +136,7 @@ class UsersTable{
 
     public function EditPost($title, $content, $image,$id){
         try {
-           $query = "UPDATE posts SET title =:title,content = :content,image = :image, updated_at = CURRENT_TIMESTAMP WHERE id = :id;";
+           $query = "UPDATE posts SET title =:title,content = :content,image = :image, updated_at = NOW() WHERE id = :id;";
            $statement = $this->db->prepare($query);
            $statement->execute([
              ':title' => $title,
@@ -153,7 +153,7 @@ class UsersTable{
 
     public function EditPostNoImg($title, $content, $id){
         try {
-           $query = "UPDATE posts SET title =:title,content = :content,updated_at = CURRENT_TIMESTAMP WHERE id = :id;";
+           $query = "UPDATE posts SET title =:title,content = :content,updated_at = NOW() WHERE id = :id;";
            $statement = $this->db->prepare($query);
            $statement->execute([
              ':title' => $title,
@@ -228,14 +228,15 @@ class UsersTable{
         }
     }
 
-    public function addUser($name, $email, $password){
+    public function addUser($name, $email, $password,$role){
         try {
-            $query = "INSERT INTO users(name, email, password) VALUES (:name, :email, :password);";
+            $query = "INSERT INTO users(name, email, password, role) VALUES (:name, :email, :password, :role);";
             $statement = $this->db->prepare($query);
             $statement->execute([
                 ':name' => $name,
                 ':email' => $email, 
                 ':password' => $password,
+                ':role' => $role,
             ]);
             return $this->db->lastInsertId() ?? false;
         } catch (PDOException $e) {
