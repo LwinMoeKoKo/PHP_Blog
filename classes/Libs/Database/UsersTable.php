@@ -228,6 +228,21 @@ class UsersTable{
         }
     }
 
+    public function addUser($name, $email, $password){
+        try {
+            $query = "INSERT INTO users(name, email, password) VALUES (:name, :email, :password);";
+            $statement = $this->db->prepare($query);
+            $statement->execute([
+                ':name' => $name,
+                ':email' => $email, 
+                ':password' => $password,
+            ]);
+            return $this->db->lastInsertId() ?? false;
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
 
     public function deletePost($id){
         try {

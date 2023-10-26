@@ -153,6 +153,18 @@ scratch. This page gets rid of all links and provides the needed markup only.
               </p>
             </a>
           </li>
+          <li class="nav-item">
+              <a href="create.php" class="nav-link">
+                <i class="nav-icon fas fa-plus-circle"></i>
+                <p>Create Post</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="addUser.php" class="nav-link">
+                <i class="nav-icon fas fa-user-edit"></i>
+                <p>Add user</p>
+              </a>
+            </li>
             <li class="nav-item">
               <a href="actions/logout.php" class="nav-link">
                 <i class="nav-icon fas fa-sign-out-alt"></i>
@@ -190,11 +202,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                           <form action="actions/edit.php" method="post" enctype="multipart/form-data">
                              <div class="mb-3">
                                  <label for="title" class="form-label">Title</label>
-                               <input type="text" class="form-control" id="title" name="title" placeholder="<?= $post->title ?>" >
+                                <textarea type="text" class="form-control" id="title"    name="title" cols="30" rows="1" >
+                                 <?= $post->title ?>
+                                </textarea>
                              </div>
                              <div class="mb-3">
                                 <label for="content" class="form-label">Contents</label><br>
-                                <textarea name="content" id="" cols="30" rows="5"  class="form-control" ><?= $post->content ?></textarea>
+                                <textarea name="content" id="content" cols="30" rows="5"  class="form-control" ><?= $post->content ?></textarea>
                              </div>
                              <?php if("actions/photo/<?= $post->image ?>"): ?>
                                 <img src="actions/photos/<?= $post->image ?>" alt="<?= $post->image ?>" class="img-thumbnail my-2" style="width: 150px; height: 150px;">
@@ -210,6 +224,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                                 <!-- <a href="#" class="btn btn-primary">Upload</a> -->
                              </div>
                              <button type="submit" class="btn btn-outline-danger">Edit</button>
+                             <a href="admin.php" class="btn btn-outline-dark">Back</a>
                           </form>
                           
                         </div>
