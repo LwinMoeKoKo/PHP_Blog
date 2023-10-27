@@ -12,12 +12,12 @@ $password = $_POST['password'];
 $table = new UsersTable(new MySQL());
 
 $user = $table->searchByEmail($email);
-
+$dbPassword = $user->password;
 // print "<pre>";
 // print_r($user);
 // exit();    
 
-if($user && $password === $user->password){
+if($user && password_verify($password,$dbPassword)){
         session_start();
         $_SESSION['user'] = $user;
         if($user->role === 1){

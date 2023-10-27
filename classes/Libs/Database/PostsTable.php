@@ -57,4 +57,67 @@ class PostsTable{
             echo $e->getMessage();
         }
     }
+
+    public function getUsers(){
+        try {
+            $query = "SELECT * FROM users";
+
+            $statement = $this->db->prepare($query);
+            $statement->execute();
+            return $statement->fetchAll();
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function deleteUser($id){
+        try {
+            $query = "DELETE * FROM users WHERE id = :id";
+            $statement = $this->db->prepare($query);
+            $statement->execute([
+                ':id' => $id,
+            ]);
+            return $statement->fetchAll();
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function getUserLimit($start, $length){
+        try {
+            $query = "SELECT * FROM `users` LIMIT $start,$length";
+            $statement = $this->db->prepare($query);
+            $statement->execute();
+            return $statement->fetchAll();
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function searchUser($name){
+        try {
+            $query = "SELECT * FROM `users` WHERE name LIKE '%$name%';";
+            $statement = $this->db->prepare($query);
+            $statement->execute();
+            return $statement->fetchAll();
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function searchUserLimit($name,$start,$length){
+        try {
+            $query = "SELECT * FROM `users` WHERE name LIKE '%$name%' LIMIT $start, $length;";
+            $statement = $this->db->prepare($query);
+            $statement->execute();
+            return $statement->fetchAll();
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function h($content){
+        return htmlspecialchars($content);
+    }
+
 }

@@ -6,7 +6,7 @@ use Libs\Database\UsersTable;
 // print "<pre>";
 // print_r($_SESSION);
 // exit();    
-$auth = Auth::check();
+$auth = Auth::adminCheck();
 
 $id = $_GET['id'];
 $table = new UsersTable(new MySQL());
@@ -88,7 +88,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="index3.html" class="brand-link">
+    <a href="index3.html" class="brand-link text-decoration-none">
       <img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light">BlogAdmin</span>
     </a>
@@ -101,7 +101,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block">Admin <?= $auth->name ?></a>
+          <a href="#" class="d-block text-decoration-none">Admin <?= $auth->name ?></a>
         </div>
       </div>
 
@@ -154,6 +154,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </a>
           </li>
           <li class="nav-item">
+              <a href="usersTable.php" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Admins & Users</p>
+              </a>
+            </li>
+          <li class="nav-item">
               <a href="create.php" class="nav-link">
                 <i class="nav-icon fas fa-plus-circle"></i>
                 <p>Create Post</p>
@@ -161,7 +167,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </li>
             <li class="nav-item">
               <a href="addUser.php" class="nav-link">
-                <i class="nav-icon fas fa-user-edit"></i>
+                <i class="nav-icon fas fa-user-plus"></i>
                 <p>Add user</p>
               </a>
             </li>
@@ -191,7 +197,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
                 <!-- /.card-header -->
                 <div class="card-body">
-                    <div class="card card-danger w-50">
+                    <div class="card card-danger w-75">
                         <div class="card-header">
                           <h3 class="card-title">Edit Post</h3>
                         </div>

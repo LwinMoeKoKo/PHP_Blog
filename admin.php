@@ -6,29 +6,34 @@ use Libs\Database\UsersTable;
 // print "<pre>";
 // print_r($_SESSION);
 // exit();    
-$auth = Auth::check();
+$auth = Auth::adminCheck();
+if(empty($_GET['pageNo'])){
+  unset($_COOKIE['search']);
+  setcookie('search','',time()-1,"/");
+}
 
 $table = new UsersTable(new MySQL());
-if(isset($_GET['title'])){
-  $title = $_POST['title'];
-$allPosts = $table->searchPost($title);
+// if(isset($_GET['title'])){
+//   $title = $_POST['title'];
+// $allPosts = $table->searchPost($title);
 // print "<pre>";
 // print_r($allPosts);
 // exit();    
-   $pageN0 = 1;
-  if(isset($_GET['pageNo'])){
-    $pageN0 = $_GET['pageNo'];
-  } else {
-    global $pageN0;
-    $pageNO = 1;
-  }
-  $numOfRecords = 5;
-  $offset= ($pageN0 - 1) * $numOfRecords;
-  $totalPages = ceil(count($allPosts) / $numOfRecords);
+//    $pageN0 = 1;
+//   if(isset($_GET['pageNo'])){
+//     $pageN0 = $_GET['pageNo'];
+//   } else {
+//     global $pageN0;
+//     $pageNO = 1;
+//   }
+//   $numOfRecords = 1;
+//   $offset= ($pageN0 - 1) * $numOfRecords;
+//   $totalPages = ceil(count($allPosts) / $numOfRecords);
   
-  $limitPosts = $table->searchPostLimit($offset, $numOfRecords);
-  exit();
-}
+//   $limitPosts = $table->searchPostLimit($offset, $numOfRecords);
+//   exit();
+// } 
+  
 
   $allPosts = $table->getPosts();
    $pageN0 = 1;
@@ -36,7 +41,9 @@ $allPosts = $table->searchPost($title);
     $pageN0 = $_GET['pageNo'];
   } else {
     global $pageN0;
-    $pageNO = 1;
+    unset($_COOKIE['search']);
+    setcookie('search','',time()-1,"/");
+    $pageNO = 5;
   }
   $numOfRecords = 5;
   $offset= ($pageN0 - 1) * $numOfRecords;
@@ -44,6 +51,7 @@ $allPosts = $table->searchPost($title);
   
   $limitPosts = $table->getPostsLimit($offset, $numOfRecords);
 
+ 
 ?>
 
 <!DOCTYPE html>
@@ -179,6 +187,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 <span class="right badge badge-danger"><?= count($allPosts) ?></span>
               </p>
             </a>
+          </li>
+            <li class="nav-item">
+              <a href="usersTable.php" class="nav-link">
+                <i class="nav-icon fas fa-users"></i>
+                <p>Admins & Users</p>
+              </a>
+            </li>
             <li class="nav-item">
               <a href="create.php" class="nav-link">
                 <i class="nav-icon fas fa-plus-circle"></i>
@@ -187,7 +202,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </li>
             <li class="nav-item">
               <a href="addUser.php" class="nav-link">
-                <i class="nav-icon fas fa-user-edit"></i>
+                <i class="nav-icon fas fa-user-plus"></i>
                 <p>Add user</p>
               </a>
             </li>
@@ -225,6 +240,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
               <div class="card-body">
                 <?php if(isset($_GET['createSuccess'])): ?>
                         <div class="alert alert-success">Your Post created successfully. </div>
+                <?php endif ?>         
+                <?php if(isset($_GET['notFound'])): ?>
+                        <div class="alert alert-primary">Post is not found on database. </div>
+                <?php endif ?>
+                <?php if(isset($_GET['delete'])): ?>
+                        <div class="alert alert-secondary">User account deleted successfully. </div>
                 <?php endif ?>         
                 <?php if(isset($_GET['editSuccess'])): ?>
                         <div class="alert alert-success">Your Post edited successfully. </div>

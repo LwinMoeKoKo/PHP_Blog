@@ -14,7 +14,7 @@ $auth = Auth::check();
 $allPosts = $table->getPosts();
 // $id = $_GET['id'];
 // print "<pre>";
-// print_r($allPosts);
+// print_r($auth);
 // exit(); 
 $pageNo = 1;
 
@@ -86,20 +86,20 @@ $limitPost = $table->getPostsLimit($start,$offset);
     <!-- Main content -->
     <section class="content">
       <div class="container-fluid">
-      <div class="card card-success">
+      <div class="card card">
           <div class="card-body">
             <div class="row">
               <?php foreach($limitPost as $post): ?>
               <div class="col-lg-4 col-md-6 col-12">
                 <!-- Box Comment -->
-                <div class="card card-widget mb-3" style="height: 500px !important;">
+                <div class="card card-widget card-indigo mb-3" style="height: 500px !important;">
                   <div class="card-header text-center h5 ">
-                     <?= $post->title ?>
+                     <?= substr($post->title,0,20) ?>
                   </div>
                   <!-- /.card-header -->
                   <div class="card-body">
                     <a href="<?= $post->id ?>">
-                      <img class="img-fluid card-img" src="actions/photos/<?= $post->image?>" alt="Photo" style="width: 100% !important;height: 250px !important;">
+                      <img class="img-fluid card-img img-thumbnail" src="actions/photos/<?= $post->image?>" alt="Photo" style="width: 100% !important;height: 250px !important;">
                     </a>
                     <div class="card-text mt-2"> <?= substr($post->content,0,80)  ?></div>
                   </div>

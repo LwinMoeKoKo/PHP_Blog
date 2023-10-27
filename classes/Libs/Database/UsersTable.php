@@ -213,31 +213,11 @@ class UsersTable{
         }
     }
 
-    public function changeRole($id, $role){
-        try {
-            $query = "UPDATE users SET role_id = :role WHERE id = :id;";
-            $statement = $this->db->prepare($query);
-            $statement->execute([
-                ':id' => $id,
-                ':role' => $role,
-            ]);
-            $row = $statement->fetch();
-            return $row ?? false;
-        } catch (PDOException $e) {
-            echo $e->getMessage();
-        }
-    }
-
-    public function addUser($name, $email, $password,$role){
+    public function addUser($data){
         try {
             $query = "INSERT INTO users(name, email, password, role) VALUES (:name, :email, :password, :role);";
             $statement = $this->db->prepare($query);
-            $statement->execute([
-                ':name' => $name,
-                ':email' => $email, 
-                ':password' => $password,
-                ':role' => $role,
-            ]);
+            $statement->execute($data);
             return $this->db->lastInsertId() ?? false;
         } catch (PDOException $e) {
             echo $e->getMessage();
@@ -259,5 +239,33 @@ class UsersTable{
         }
     }
 
+    public function deleteUser($id){
+        try {
+           $query = "DELETE FROM users WHERE id = :id;";
+           $statement = $this->db->prepare($query);
+           $statement->execute([
+             ':id' => $id,
+           ]);
+           $row = $statement->fetch();
+           return $row ?? false;
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
+
+    public function changeRoleUser($id, $role){
+        try {
+           $query = "UPDATE users SET role = :role WHERE id = :id;";
+           $statement = $this->db->prepare($query);
+           $statement->execute([
+             ':id' => $id,
+             ':role' => $role,
+           ]);
+           $row = $statement->fetch();
+           return $row ?? false;
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+    }
 }
 

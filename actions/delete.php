@@ -16,4 +16,4 @@ $id = $_GET['id'];
 
 $table->deletePost($id);
 
-HTTP::redirect("/admin.php");
+HTTP::redirect("/admin.php","delete=true");

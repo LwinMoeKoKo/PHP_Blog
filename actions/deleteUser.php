@@ -1,18 +1,19 @@
 <?php
 
+
 include("../vendor/autoload.php");
 
+use Helpers\Auth;
 use Helpers\HTTP;
 use Libs\Database\MySQL;
 use Libs\Database\UsersTable;
 
-$title = $_POST['title'];
+$auth = Auth::check();
+
+$id = $_GET['id'];
 
 $table = new UsersTable(new MySQL());
-$row = $table->searchPost($title);
-// print "<pre>";
-// print_r($row);
-// exit();    
 
+$table->deleteUser($id);
 
-HTTP::redirect("/admin.php","search=$row");
+HTTP::redirect("/usersTable.php","delete=true");

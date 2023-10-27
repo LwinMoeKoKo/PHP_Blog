@@ -36,7 +36,7 @@ if($_POST){
             $imgType === "image/png" ){
                 move_uploaded_file($imgTmp, "photos/$imgName");
                 $table->createPost($title,$content,$imgName,$auth->id);
-                HTTP::redirect("/create.php","createSuccess=true");
+                HTTP::redirect("/admin.php","createSuccess=true");
             } else {
                 HTTP::redirect("/create.php","error=type");
             }

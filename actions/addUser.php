@@ -9,12 +9,33 @@ use Libs\Database\UsersTable;
 $auth = Auth::check();
 
 $table = new UsersTable(new MySQL());
-
 $name = $_POST['name'];
 $email = $_POST['email'];
-$password = $_POST['password'];
-$role = $_POST['role'] ?? 0;
+$password = password_hash($_POST['password'],PASSWORD_BCRYPT) ;
+$role = 0;
 
-$table->addUser($name, $email, $password, $role);
+$checkEmail = $table->checkEmail($email);
+if($checkEmail){
+    HTTP::redirect("/addUser.php","havingEmail=true");
+}
+if( $_POST['role'] === "on"){
+    global $role;
+    $role = 1;
+} else {
+    $role = 0;
+}
 
-HTTP::redirect("/admin.php");
+$data = [
+    "name" => $name,
+    "email" => $email,
+    "password" => $password,
+    'role' => $role,
+];
+
+$user = $table->addUser($data);
+// print "<pre>";
+// print_r($role);
+// print_r($data);
+// exit();    
+
+HTTP::redirect("/usersTable.php","add=true");

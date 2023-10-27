@@ -25,7 +25,7 @@
 
       <form action="actions/register.php" method="post">
             <?php if(isset($_GET['havingEmail'])): ?>
-                <div class="alert alert-danger">Your Email name is already have.<br> Use another email account.</div>
+                <div class="alert alert-warning">Your Email is already have.</div>
             <?php endif ?> 
         <div class="input-group mb-3">
           <input type="text" class="form-control" name="name" placeholder="Full name" required>

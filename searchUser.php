@@ -3,53 +3,41 @@ require("vendor/autoload.php");
 use Helpers\Auth;
 use Helpers\HTTP;
 use Libs\Database\MySQL;
-use Libs\Database\UsersTable;
+use Libs\Database\PostsTable;
 // print "<pre>";
 // print_r($_SESSION);
 // exit();    
 $auth = Auth::adminCheck();
 
-$table = new UsersTable(new MySQL());
+$table = new PostsTable(new MySQL());
 
-if(isset($_POST['title'])){
-  setcookie('search',$_POST['title'],time() + 86400 ,);
-}
-if(isset($_POST['title']) || isset( $_COOKIE['search'])){
-  $postTitle = $_POST['title'];
-  $pageN0 = 1;
-
-  $title = $postTitle ? $postTitle : $_COOKIE['search']; 
-  
-  $allPosts = $table->searchPost($title);
-  if($allPosts){
-    if(isset($_GET['pageNo'])){
-        $pageN0 = $_GET['pageNo'];
+if(isset($_POST['name'])){
+    $name = $_POST['name'];
+    $users = $table->searchUser($name);
+    if($user){
+        $pageN0 = 1;
+        
+        if(isset($_GET['pageNo'])){
+          global $pageN0;
+          $pageN0 = $_GET['pageNo'];
+        } else {
+          $pageN0 = 1;
+        }
+        
+        $offset = 5;
+        $totalPages =  ceil(count($users) / $offset);
+        $start = ($pageN0-1) * $offset;
+        $limitUsers = $table->searchUserLimit($name,$start,$offset);   
     } else {
-        global $pageN0;
-        $pageNO = 1;
+        HTTP::redirect("/usersTable.php","notFound=true");
     }
-    $numOfRecords = 2;
-    $offset= ($pageN0 - 1) * $numOfRecords;
-    $totalPages = ceil(count($allPosts) / $numOfRecords);
-    
-    $limitPosts = $table->searchPostLimit($offset, $numOfRecords);
-  } else {
-    setcookie('search','',time()-1);
-    HTTP::redirect("/admin.php","notFound=true");
-  }
 } else {
-  setcookie('search','',time()-1);
-  HTTP::redirect("/admin.php");
+    HTTP::redirect("/usersTable.php");
 }
-//  print "<pre>";
-//  print_r($totalPages);
-//  print_r($offset);
-//  print_r($limitPosts);
-//  print_r($_COOKIE['search']);
-//  exit();    
- 
- 
- 
+
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -69,6 +57,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link rel="stylesheet" href="plugins/fontawesome-free/css/all.min.css">
   <!-- Theme style -->
   <link rel="stylesheet" href="dist/css/adminlte.min.css">
+  <link rel="stylesheet" href="dist/css/bootstrap.css">
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
@@ -98,7 +87,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
         <div class="navbar-search-block">
           <form class="form-inline" action="" method="post">
             <div class="input-group input-group-sm">
-              <input class="form-control form-control-navbar" name="title" type="search" placeholder="Search Blogs" aria-label="Search">
+              <input class="form-control form-control-navbar" name="name" type="search" placeholder="Search user" aria-label="Search">
               <div class="input-group-append">
                 <button class="btn btn-navbar" type="submit">
                   <i class="fas fa-search"></i>
@@ -120,7 +109,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- Main Sidebar Container -->
   <aside class="main-sidebar sidebar-dark-primary elevation-4">
     <!-- Brand Logo -->
-    <a href="index3.html" class="brand-link">
+    <a href="index3.html" class="brand-link text-decoration-none">
       <img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" class="brand-image img-circle elevation-3" style="opacity: .8">
       <span class="brand-text font-weight-light">BlogAdmin</span>
     </a>
@@ -133,20 +122,22 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block">Admin <?= $auth->name ?></a>
+          <a href="#" class="d-block text-decoration-none">Admin <?= $auth->name ?></a>
         </div>
       </div>
 
       <!-- SidebarSearch Form -->
       <div class="form-inline">
-        <div class="input-group" data-widget="sidebar-search">
-          <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search">
-          <div class="input-group-append">
-            <button class="btn btn-sidebar">
-              <i class="fas fa-search fa-fw"></i>
-            </button>
+        <form action="" method="post">
+          <div class="input-group" data-widget="sidebar-search">
+            <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search" name="name">
+            <div class="input-group-append">
+              <button class="btn btn-sidebar">
+                <i class="fas fa-search fa-fw"></i>
+              </button>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
 
       <!-- Sidebar Menu -->
@@ -182,13 +173,14 @@ scratch. This page gets rid of all links and provides the needed markup only.
               <i class="nav-icon fas fa-th"></i>
               <p>
                 Blogs
-                <span class="right badge badge-danger"><?= count($allPosts) ?></span>
-              </p>
+            </p>
             </a>
-            <li class="nav-item">
-              <a href="usersTable.php" class="nav-link">
+          </li>
+        <li class="nav-item">
+            <a href="usersTable.php" class="nav-link">
                 <i class="nav-icon fas fa-users"></i>
                 <p>Admins & Users</p>
+                <span class="float-right badge badge-danger"><?= count($users) ?></span>
               </a>
             </li>
             <li class="nav-item">
@@ -228,10 +220,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 
 
 
-            <h1 class="my-3">Blog Page</h1>
+            <!-- <h1 class="my-3 h4">Manage User and Admins</h1> -->
             <div class="card">
               <div class="card-header">
-                <h3 class="card-title">Posts   <span class="right badge badge-danger ms-2"><?= count($allPosts) ?></span></h3>
+                <h3 class="card-title font-weight-bold">Manage User and Admins   <span class="right badge badge-danger ms-2"><?= count($users) ?></span></h3>
               </div>
               <!-- /.card-header -->
               <div class="card-body">
@@ -239,22 +231,39 @@ scratch. This page gets rid of all links and provides the needed markup only.
                   <thead>
                     <tr>
                       <th style="width: 10px"><i class="fas fa-hashtag"></i></th>
-                      <th><i class="fab fa-dailymotion me-1"></i>Title</th>
-                      <th><i class="fas fa-newspaper me-1"></i>Content</th>
-                      <th style="width: 40px"><i class="fas fa-edit me-1">Actions</th>
+                      <th><i class="fas fa-user-graduate me-1"></i>Name</th>
+                      <th><i class="fas fa-mail-bulk me-1"></i>Email</th>
+                      <th><i class="fas fa-user-shield me-1"></i>Role</th>
+                      <th><i class="fas fa-edit me-1">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
                     <?php  $i =1 ?>
-                    <?php foreach($limitPosts as $post): ?>
+                    <?php foreach($limitUsers as $user): ?>
                     <tr>
                       <td><?= $i ?> </td>
-                      <td><?= $post->title ?></td>
-                      <td><?= substr($post->content,0,70)  ?>...</td>
+                      <td><?= $user->name ?></td>
+                      <td><?= $user->email  ?></td>
+                      <td>
+                        <?php if($user->role === 1) : ?>
+                            <span class="badge bg-gradient-danger">Admin</span>
+                            <?php else : ?>
+                            <span class="badge bg-gradient-fuchsia">User</span>
+                        <?php endif ?>
+                    </td>
                       <td>
                         <div class="btn-group btn-group-sm">
-                          <a href="edit.php?id=<?= $post->id ?>" class="btn btn-dark">Edit</a>
-                          <a href="actions/delete.php?id=<?= $post->id ?>" class="btn btn-danger" onclick="return confirm('Are You Sure?')">Delete</a>
+                          <a href="edit.php?id=<?= $user->id ?>" class="btn btn-primary dropdown dropdown-toggle" data-bs-toggle="dropdown">Change Role</a>
+                          <ul class="dropdown-menu dropdown-menu-dark">
+                            <li class="dropdown-item">
+                              <a href="actions/changeRole.php?id=<?= $user->id ?>&&role=1" class="text-white text-decoration-none">Admin</a>
+                            </li>
+                            <li class="dropdown-item">
+                              <a href="actions/changeRole.php?id=<?= $user->id ?>&&role=0" class="text-white text-decoration-none">User</a>
+                            </li>
+                          </ul>
+                          <a href="edit.php?id=<?= $user->id ?>" class="btn btn-warning">Edit</a>
+                          <a href="actions/deleteUser.php?id=<?= $user->id ?>" class="btn btn-danger" onclick="return confirm('Are You Sure?')">Delete</a>
                         </div>
                       </td>
                     </tr>
@@ -264,11 +273,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                 </table>
                 <nav class="float-right mt-2">
                   <ul class="pagination">
-                    <?php if($allPosts < $numOfRecords): ?>
-                    <li class="page-item <?php if($allPosts < $numOfRecords) { echo "disabled";} ?>">
-                        <a href="<?php if($allPosts <= $numOfRecords) {echo "#";} else { print("?pageNo=".$pageN0);} ?>" class="page-link">First</a>
-                    </li>
-                    <?php endif ?>
+                    <li class="page-item "><a href="?pageNo=1" class="page-link">First</a></li>
                     <li class="page-item <?php if($pageN0 <= 1) echo "disabled" ?>">
                       <a href="<?php if($pageN0 <= 1) {echo "#";} else { print("?pageNo=".$pageN0-1);} ?>" class="page-link">Previous</a>
                     </li>
@@ -276,11 +281,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <li class="page-item <?php if($pageN0 >= $totalPages) echo "disabled" ?>">
                       <a href=" <?php if($pageN0 >= $totalPages) {echo "#";} else { print("?pageNo=".$pageN0+1);} ?>"  class="page-link">Next</a>
                     </li>
-                    <?php if($limitPosts < $numOfRecords): ?>
-                    <li class="page-item">
-                        <a href="<?php if($limitPosts < $numOfRecords) {echo "#";} else { print("?pageNo=".$totalPages);} ?>" class="page-link">Last</a>
-                    </li>
-                    <?php endif ?>
+                    <li class="page-item"><a href="?pageNo=<?= $totalPages ?>" class="page-link">Last</a></li>
                   </ul>
                 </nav>
               </div>
@@ -322,3 +323,5 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <script src="dist/js/adminlte.min.js"></script>
 </body>
 </html>
+
+
