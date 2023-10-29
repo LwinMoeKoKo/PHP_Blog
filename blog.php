@@ -6,8 +6,10 @@ use Helpers\Auth;
 use Helpers\HTTP;
 use Libs\Database\MySQL;
 use Libs\Database\UsersTable;
+use Libs\Database\PostsTable;
 
 $table = new UsersTable(new MySQL());
+$postTable = new PostsTable(new MySQL());
 
 $auth = Auth::check();
 
@@ -30,6 +32,8 @@ $totalPage = ceil(count($allPosts) / $offset);
 $start = ($pageNo - 1) * $offset;
 
 $limitPost = $table->getPostsLimit($start,$offset);
+
+$token = $postTable->tokenCsrf();
 ?>
 
 <!DOCTYPE html>
@@ -94,14 +98,14 @@ $limitPost = $table->getPostsLimit($start,$offset);
                 <!-- Box Comment -->
                 <div class="card card-widget card-indigo mb-3" style="height: 500px !important;">
                   <div class="card-header text-center h5 ">
-                     <?= substr($post->title,0,20) ?>
+                     <?= $postTable->h(substr($post->title,0,20))  ?>
                   </div>
                   <!-- /.card-header -->
                   <div class="card-body">
                     <a href="<?= $post->id ?>">
                       <img class="img-fluid card-img img-thumbnail" src="actions/photos/<?= $post->image?>" alt="Photo" style="width: 100% !important;height: 250px !important;">
                     </a>
-                    <div class="card-text mt-2"> <?= substr($post->content,0,80)  ?></div>
+                    <div class="card-text mt-2"> <?= $postTable->h(substr($post->content,0,80))  ?></div>
                   </div>
                   <div class="card-footer">
                     <a href="blogDetail.php?id=<?= $post->id ?>" class="btn btn-outline-danger">Read More</a>

@@ -1,22 +1,67 @@
 <?php
 require("vendor/autoload.php"); 
 use Helpers\Auth;
+use Helpers\HTTP;
 use Libs\Database\MySQL;
 use Libs\Database\UsersTable;
+use Libs\Database\PostsTable;
 // print "<pre>";
 // print_r($_SESSION);
 // exit();    
 $auth = Auth::adminCheck();
 
-$id = $_GET['id'];
-$table = new UsersTable(new MySQL());
 
-$post = $table->getPost($id);
+$table = new UsersTable(new MySQL());
+$postTable = new PostsTable(new MySQL());
+$token = $postTable->tokenCsrf();
+
+if(isset($_GET['id'])){
+  $post = $table->getPost($_GET['id']);
+}
+
+if($_POST){
+  $title = $_POST['title'];
+  $content = $_POST['content'];  
+  $id = $_POST['id'];
+  $imgName = $_FILES['image']['name'];
+  $imgError = $_FILES['image']['error'];
+  $imgTmp = $_FILES['image']['tmp_name'];
+  $imgType = $_FILES['image']['type'];
+  if(!($_POST['title']) or !($_POST['content'])){
+    if(!(($_POST['title']))){
+      $titleNull = "Please fill the title";
+    }
+    if(!(($_POST['content']))){
+      $contentNull = "Please fill the content";
+    } 
+  } else {
+    $postTable->tokenCheck($_POST['csrf']);
+    if($imgError === 4){
+          $table->EditPostNoImg($title,$content,$id);
+          HTTP::redirect("/admin.php","editSuccess=true");
+        }
+    if($imgError){
+         $imgError = "Your photo cannot be uploaded";
+        }
+        if($imgType === "image/jpeg" ||
+            $imgType === "image/jpg" ||
+            $imgType === "image/png" ){
+                move_uploaded_file($imgTmp, "photos/$imgName");
+                $table->EditPost($title,$content,$imgName,$id);
+                HTTP::redirect("/admin.php","editSuccess=true");
+            } else {
+                $imgFileError = "Image type must be jpeg or jpg or png";
+            }  
+          }
+          $post = $table->getPost($_POST['id']);
+ }
+
+
 // print "<pre>";
 // print_r($id);
-// print_r($post);
-// exit();    
-
+// print_r( empty($_POST) );
+// print_r( $_FILES);
+// exit();
 ?>
 
 <!DOCTYPE html>
@@ -101,7 +146,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block text-decoration-none">Admin <?= $auth->name ?></a>
+          <a href="#" class="d-block text-decoration-none">Admin <?= $postTable->h($auth->name) ?></a>
         </div>
       </div>
 
@@ -205,28 +250,35 @@ scratch. This page gets rid of all links and provides the needed markup only.
                           <?php if(isset($_GET['success'])) : ?>
                           <div class="alert alert-success">Your Post successfully updated. </div>
                           <?php endif ?>
-                          <form action="actions/edit.php" method="post" enctype="multipart/form-data">
-                             <div class="mb-3">
-                                 <label for="title" class="form-label">Title</label>
-                                <textarea type="text" class="form-control" id="title"    name="title" cols="30" rows="1" >
-                                 <?= $post->title ?>
-                                </textarea>
-                             </div>
+                          <form action="edit.php" method="post" enctype="multipart/form-data">
+                              <?php if(isset($titleNull)) : ?>
+                                <p class="text-danger">*Please fill the title </p>
+                              <?php endif ?>
+                              <input type="hidden" name="csrf" value="<?= $token ?>"  >
+                              <input type="hidden" name="id" value="<?=$post->id ?>">  
+                              <div class="mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" name="title" id="title"
+                                value=" <?= $postTable->h($post->title)   ?>">
+                              </div>
+                              <?php if(isset($contentNull)) : ?>
+                                <p class="text-danger">*Please fill the content </p>
+                              <?php endif ?>
                              <div class="mb-3">
                                 <label for="content" class="form-label">Contents</label><br>
-                                <textarea name="content" id="content" cols="30" rows="5"  class="form-control" ><?= $post->content ?></textarea>
+                                <textarea name="content" id="content" cols="30" rows="5"  class="form-control" ><?= $postTable->h($post->content ) ?></textarea>
                              </div>
                              <?php if("actions/photo/<?= $post->image ?>"): ?>
-                                <img src="actions/photos/<?= $post->image ?>" alt="<?= $post->image ?>" class="img-thumbnail my-2" style="width: 150px; height: 150px;">
+                                <img src="actions/photos/<?= $post->image  ?>" alt="<?= $post->image ?>" class="img-thumbnail my-2" style="width: 150px; height: 150px;">
                              <?php endif ?>
-                             <?php if(isset($_GET['error'])) : ?>
+                             <?php if(isset($imgError) || isset($imgFileError)) : ?>
                               <div class="alert alert-danger">Your photo cannot be uploaded. </div>
                               <?php endif ?>
                              <div class="input-group mb-3">
                                 <div class="input-group-text">
                                     <i class="fas fa-file-image"></i>
                                 </div>
-                                <input type="file" class="form-control" name="image">
+                                <input type="file" class="form-control" name="image" value="<?= $post->image ?>">
                                 <!-- <a href="#" class="btn btn-primary">Upload</a> -->
                              </div>
                              <button type="submit" class="btn btn-outline-danger">Edit</button>

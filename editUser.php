@@ -1,64 +1,57 @@
 <?php
 require("vendor/autoload.php"); 
-
 use Helpers\Auth;
 use Helpers\HTTP;
 use Libs\Database\MySQL;
-use Libs\Database\UsersTable;
 use Libs\Database\PostsTable;
-$auth = Auth::check();
+   
+$auth = Auth::adminCheck();
 
-$table = new UsersTable(new MySQL());
-$table1 = new PostsTable(new MySQL());
-$token = $table1->tokenCsrf();
-if($_POST){
-  if(!($_POST['name']) 
-  || !($_POST['email']) 
-  || !($_POST['password']) 
-  || strlen($_POST['password']) < 8){
-    if(!(($_POST['name']))){
-      $nameNull = "Please fill the name";
-    }
-    if(!(($_POST['email']))){
-      $emailNull = "Please fill the email";
-    } 
-    if(!(($_POST['password']))){
-      $passwordNull = "Please fill the password";
-    } 
-    if(strlen($_POST['password']) < 8){
-      $passwordLength = "Your password must have at least 8 characters";
-    }
- } else {
-    $table1->tokenCheck($_POST['csrf']);
-    $name = $table1->h($_POST['name']);
-    $email = $table1->h($_POST['email']);
-    $password = password_hash($_POST['password'],PASSWORD_BCRYPT) ;
-    $role = 0;
-    $checkEmail = $table->checkEmail($email);
-    if($checkEmail){
-        HTTP::redirect("/addUser.php","havingEmail=true");
-    }
-    
-    if( $_POST['role'] === "on"){
-        global $role;
-        $role = 1;
-    } else {
-        $role = 0;
-    }
-    
-    $data = [
-        "name" => $name,
-        "email" => $email,
-        "password" => $password,
-        'role' => $role,
-    ];
-    
-    $user = $table->addUser($data);
-    HTTP::redirect("/usersTable.php","add=true");
-  }
- }
+$table = new PostsTable(new MySQL());
+$token = $table->tokenCsrf();
+if(isset($_GET['id'])){
+  $user = $table->getUser($_GET['id']);
+}
 
 
+if(($_POST)){
+    if(!($_POST['name']) || !($_POST['email']) ){
+        if(!($_POST['name'])){
+            $nameRequire = "Fill the name";
+        }
+        if(!($_POST['email'])){
+            $emailRequire = "Fill the email";
+        }
+      }elseif(($_POST['password']) && strlen($_POST['password']) < 8){
+        $passwordRequire = "Password must be at least 8 characters";
+      }
+    else {
+        $table->tokenCheck($_POST['csrf']);
+        $name = $_POST['name'];
+        $email = $_POST['email'];
+        $password = password_hash($_POST['password'],PASSWORD_BCRYPT);
+        $id = $_POST['id'];
+        if(!$password){
+          $data = [
+              'name' => $name,
+              'email' => $email,
+              'id' => $id,
+          ];
+          $table->updateUserNoPassword($data);
+          HTTP::redirect("/usersTable.php","edit=true");
+        } else{
+          $data = [
+            'name' => $name,
+            'email' => $email,
+            'password' => $password,
+            'id' => $id,
+        ];
+        $table->updateUser($data);
+        HTTP::redirect("/usersTable.php","edit=true");
+        }
+    }
+    $user = $table->getUser( $_POST['id']);
+}
 
 ?>
 
@@ -71,7 +64,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Dashboard</title>
+  <title>Admin Edit User Page</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -102,7 +95,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Right navbar links -->
     <ul class="navbar-nav ml-auto">
       <!-- Navbar Search -->
-      <!-- <li class="nav-item">
+      <li class="nav-item">
         <a class="nav-link" data-widget="navbar-search" href="#" role="button">
           <i class="fas fa-search"></i>
         </a>
@@ -121,7 +114,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             </div>
           </form>
         </div>
-      </li> -->
+      </li>
 
      
     </ul>
@@ -144,7 +137,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block text-decoration-none">Admin <?= $auth->name ?></a>
+          <a href="#" class="d-block text-decoration-none">Admin <?= $table->h($auth->name) ?></a>
         </div>
       </div>
 
@@ -199,13 +192,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <li class="nav-item">
               <a href="usersTable.php" class="nav-link">
                 <i class="nav-icon fas fa-users"></i>
-                Admins & Users
+                <p>Admins & Users</p>
               </a>
             </li>
           <li class="nav-item">
               <a href="create.php" class="nav-link">
                 <i class="nav-icon fas fa-plus-circle"></i>
                 <p>Create Post</p>
+              </a>
+            </li>
+            <li class="nav-item">
+              <a href="addUser.php" class="nav-link">
+                <i class="nav-icon fas fa-user-plus"></i>
+                <p>Add user</p>
               </a>
             </li>
             <li class="nav-item">
@@ -234,64 +233,37 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
                 <!-- /.card-header -->
                 <div class="card-body">
-                    <div class="card card-danger w-50">
+                    <div class="card card-danger w-75">
                         <div class="card-header">
-                          <h3 class="card-title">Add User OR Admin</h3>
+                          <h3 class="card-title">Edit User</h3>
                         </div>
                         <div class="card-body  bg-gradient">
-                          <form  id="quickForm" action="addUser.php" method="post" enctype="multipart/form-data">
-                            <?php if(isset($_GET['havingEmail'])): ?>
-                              <div class="alert alert-warning">Your Email is already have.</div>
-                            <?php endif ?>
-                            <input type="hidden" name="csrf" value="<?= $token ?>"  >
-                            <div class="mb-3 form-check">
-                              <label for="Name" class="form-label">Name</label>
-                              <?php if(isset($nameNull)) : ?>
-                                  <p class="text-danger">*<?= $nameNull ?> </p>
-                                <?php endif ?>
-                               <input type="text" class="form-control" id="Name" name="name" placeholder="Name">
-                               <div class="valid-feedback">Valid</div>
-                               <div class="invalid-feedback">Please fill the user name</div>
-                             </div>
-                             <div class="mb-3 form-check">
-                               <label for="exampleInputEmail1" class="form-label">Email</label>
-                               <?php if(isset($emailNull)) : ?>
-                                  <p class="text-danger">*<?= $emailNull ?> </p>
-                                <?php endif ?>
-                               <input type="email" class="form-control" id="exampleInputEmail1" name="email" placeholder=" Email">
-                               <div class="valid-feedback">Valid</div>
-                               <div class="invalid-feedback">Please fill the user email</div>
-                             </div>
-                             <div class="mb-3 form-check">
-                               <label for="Password" class="form-label">Password</label>
-                               <?php if(isset($passwordNull)) : ?>
-                                  <p class="text-danger">*<?= $passwordNull ?> </p>
-                                <?php endif ?>
-                               <?php if(isset($passwordLength)) : ?>
-                                  <p class="text-danger">*<?= $passwordLength ?> </p>
-                                <?php endif ?>
-                               <input type="password" class="form-control" id="Password" name="password" placeholder=" Password">
-                               <div class="valid-feedback">Valid</div>
-                               <div class="invalid-feedback">Please fill the user password</div>
-                             </div>
-                             <div class="mb-3 ms-5">
-                               <input type="checkbox"  class="form-check-input" id="role" name="role">
-                                 <label for="role" class="form-check-label">Admin</label>
-                                 <!-- <div class="valid-feedback">Admin</div>
-                                 <div class="invalid-feedback">User</div> -->
-                             </div>
-                            
-                             <!-- <?php if(isset($_GET['error'])) : ?>
-                              <div class="alert alert-danger">Your photo cannot be uploaded. </div>
+                          <form action="editUser.php" method="post" enctype="multipart/form-data">
+                          <input type="hidden" name="csrf" value="<?= $token ?>"  >
+                            <input type="hidden" name="id" value="<?= $user->id ?>">
+                            <div class="mb-3">
+                              <label for="name" class="form-label">Name</label>
+                              <?php if(isset($nameRequire)) : ?>
+                                <p class="text-danger">*<?= $nameRequire ?> </p>
                               <?php endif ?>
-                             <div class="input-group mb-3">
-                                <div class="input-group-text">
-                                    <i class="fas fa-file-image"></i>
-                                </div>
-                                <input type="file" class="form-control" name="image">
-                                <a href="#" class="btn btn-primary">Upload</a>
-                             </div> -->
-                             <button type="submit" class="btn btn-outline-danger">Add</button>
+                                 <input type="text" name="name" class="form-control" value="<?= $table->h($user->name) ?>">
+                             </div>
+                             <div class="mb-3">
+                               <label for="email" class="form-label">Email</label><br>
+                               <?php if(isset($emailRequire)) : ?>
+                                 <p class="text-danger">*<?= $emailRequire ?> </p>
+                               <?php endif ?>
+                                <input type="text" name="email" class="form-control" value="<?= $table->h($user->email)  ?>">
+                              </div>
+                             <div class="mb-3">
+                                <label for="password" class="form-label">Password</label><br>
+                                <?php if(isset($passwordRequire)) : ?>
+                                 <p class="text-danger">*<?= $passwordRequire ?> </p>
+                               <?php endif ?>
+                                <input type="text" name="password" class="form-control" value="" id="password">
+                                <p class="fw-bold text-indigo">This user already have a password.</p>
+                            </div>
+                             <button type="submit" class="btn btn-outline-danger">Edit</button>
                              <a href="admin.php" class="btn btn-outline-dark">Back</a>
                           </form>
                           
@@ -325,64 +297,16 @@ scratch. This page gets rid of all links and provides the needed markup only.
     </footer> -->
   </div>
   <!-- ./wrapper -->
+  
   <!-- REQUIRED SCRIPTS -->
   
+  <!-- jQuery -->
   <script src="plugins/jquery/jquery.min.js"></script>
-<!-- Bootstrap 4 -->
-<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-<!-- jquery-validation -->
-<script src="plugins/jquery-validation/jquery.validate.min.js"></script>
-<script src="plugins/jquery-validation/additional-methods.min.js"></script>
-<!-- AdminLTE App -->
-<script src="dist/js/adminlte.min.js"></script>
-  <script>
-     $('#quickForm').validate({
-    rules: {
-      email: {
-        required: true,
-        email: true,
-      },
-      password: {
-        required: true,
-        minlength: 8
-      },
-      terms: {
-        required: true
-      },
-      name: {
-        required: true,
-        text: true,
-      }
-    },
-    messages: {
-      email: {
-        required: "Please enter a email address",
-        email: "Please enter a valid email address"
-      },
-      name: {
-        required: "Please enter your name",
-        Text: "Please enter your name"
-      },
-      password: {
-        required: "Please provide a password",
-        minlength: "Your password must be at least 8 characters long"
-      },
-
-      terms: "Please accept our terms"
-    },
-    errorElement: 'span',
-    errorPlacement: function (error, element) {
-      error.addClass('invalid-feedback');
-      element.closest('.check').append(error);
-    },
-    highlight: function (element, errorClass, validClass) {
-      $(element).addClass('is-invalid');
-    },
-    unhighlight: function (element, errorClass, validClass) {
-      $(element).removeClass('is-invalid');
-    }
-  });
-  </script>
+  <!-- Bootstrap 4 -->
+  <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="../phpCRUD/js/bootstrap.bundle.js"></script>
+  <!-- AdminLTE App -->
+  <script src="dist/js/adminlte.min.js"></script>
   </body>
   </html>
 

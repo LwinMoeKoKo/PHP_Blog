@@ -2,6 +2,7 @@
 
 namespace Libs\Database;
 
+use Helpers\HTTP;
 use PDOException;
 
 class PostsTable{
@@ -119,5 +120,53 @@ class PostsTable{
     public function h($content){
         return htmlspecialchars($content);
     }
+    
+    public function  updateUser($data){
+        try {
+            $query = "UPDATE users SET name = :name, email = :email, password = :password WHERE id = :id;";
+            $statement = $this->db->prepare($query);
+            $statement->execute($data);
+            $row = $statement->rowCount();
+            return $row ?? false;
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+        
+    }
+    public function  updateUserNoPassword($data){
+        try {
+            $query = "UPDATE users SET name = :name, email = :email WHERE id = :id;";
+            $statement = $this->db->prepare($query);
+            $statement->execute($data);
+            $row = $statement->rowCount();
+            return $row ?? false;
+        } catch (PDOException $e) {
+            echo $e->getMessage();
+        }
+        
+    }
 
-}
+    public function tokenCsrf(){
+        if(isset($_SESSION['csrf'])){
+            return $_SESSION['csrf'];
+        } else {
+            $token = sha1(rand(1,1000).time(). 'csrf secret');
+            $_SESSION['csrf'] = $token;
+        }
+        
+    }
+    
+    public function tokenCheck($csrf){
+            if($csrf !== $_SESSION['csrf']){
+                unset($_SESSION['user']);
+                unset($_SESSION['csrf']);
+                HTTP::redirect("/index.php");
+            } else {
+                unset($_SESSION['csrf']);
+            }
+        }
+
+}           
+        
+            
+            

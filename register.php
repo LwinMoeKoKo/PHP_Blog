@@ -1,3 +1,49 @@
+<?php
+
+
+include("vendor/autoload.php");
+
+use Helpers\HTTP;
+use Libs\Database\MySQL;
+use Libs\Database\UsersTable;
+use Libs\Database\PostsTable;
+
+$table = new UsersTable(new MySQL());
+$table1 = new PostsTable(new MySQL());
+
+if($_POST){
+  if(!($_POST['name']) 
+  || !($_POST['email']) 
+  || !($_POST['password']) 
+  || strlen($_POST['password']) < 8){
+    if(!(($_POST['name']))){
+      $nameNull = "Please fill the name";
+    }
+    if(!(($_POST['email']))){
+      $emailNull = "Please fill the email";
+    } 
+    if(!(($_POST['password']))){
+      $passwordNull = "Please fill the password";
+    } 
+    if(strlen($_POST['password']) < 8){
+      $passwordLength = "Your password must have at least 8 characters";
+    }
+ } else {
+    $name = $table1->h($_POST['name']);
+    $email = $table1->h($_POST['email']);
+    $password = password_hash($_POST['password'],PASSWORD_BCRYPT) ;
+    $checkEmail = $table->checkEmail($email);
+    if($checkEmail){
+        HTTP::redirect("/register.php","havingEmail=true");
+    }
+    $table->registerUser($name, $email, $password);
+    
+    HTTP::redirect("/index.php","success=true");
+  }
+}
+ ?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +61,7 @@
   <link rel="stylesheet" href="dist/css/adminlte.min.css">
 </head>
 <body class="hold-transition register-page">
-<div class="register-box">
+<div class="register-box" style="width: 400px !important;">
   <div class="card card-outline card-primary">
     <div class="card-header text-center">
       <div class="h1"><b>Blog</b></div>
@@ -23,28 +69,40 @@
     <div class="card-body">
       <p class="login-box-msg">Register your account</p>
 
-      <form action="actions/register.php" method="post">
+      <form action="register.php" method="post">
             <?php if(isset($_GET['havingEmail'])): ?>
                 <div class="alert alert-warning">Your Email is already have.</div>
             <?php endif ?> 
-        <div class="input-group mb-3">
-          <input type="text" class="form-control" name="name" placeholder="Full name" required>
-          <div class="input-group-append">
-            <div class="input-group-text">
-              <span class="fas fa-user"></span>
+            <?php if(isset($nameNull)) : ?>
+                <p class="text-danger">*<?= $nameNull ?> </p>
+            <?php endif ?>                        
+            <div class="input-group mb-3">
+            <input type="text" class="form-control" name="name" placeholder="Full name">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-user"></span>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="input-group mb-3">
-          <input type="email" class="form-control" name="email" placeholder="Email" required>
+          <?php if(isset($emailNull)) : ?>
+              <p class="text-danger">*<?= $emailNull ?> </p>
+          <?php endif ?>                        
+          <div class="input-group mb-3">
+          <input type="email" class="form-control" name="email" placeholder="Email">
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fas fa-envelope"></span>
             </div>
           </div>
         </div>
+        <?php if(isset($passwordNull)) : ?>
+            <p class="text-danger">*<?= $passwordNull ?> </p>
+        <?php endif ?>                        
+        <?php if(isset($passwordLength)) : ?>
+            <p class="text-danger">*<?= $passwordLength ?> </p>
+        <?php endif ?>                        
         <div class="input-group mb-3">
-          <input type="password" class="form-control" name="password" placeholder="Password" required>
+          <input type="password" class="form-control" name="password" placeholder="Password">
           <div class="input-group-append">
             <div class="input-group-text">
               <span class="fas fa-lock"></span>

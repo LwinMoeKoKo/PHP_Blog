@@ -9,11 +9,15 @@ use Libs\Database\MySQL;
 use Libs\Database\UsersTable;
 
 $auth = Auth::check();
-
-$id = $_GET['id'];
-
 $table = new UsersTable(new MySQL());
 
-$table->deleteUser($id);
-
-HTTP::redirect("/usersTable.php","delete=true");
+$id = $_GET['id'];
+if($_GET['csrf'] === $_SESSION['csrf']){
+    $table->deleteUser($id);
+    
+    HTTP::redirect("/usersTable.php","delete=true");
+} else {
+    unset($_SESSION['user']);
+    HTTP::redirect("/index.php");
+}
+       

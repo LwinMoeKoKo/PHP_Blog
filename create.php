@@ -1,11 +1,14 @@
 <?php
 require("vendor/autoload.php"); 
 use Helpers\Auth;
+use Libs\Database\PostsTable;
+use Libs\Database\MySQL;
+$table = new PostsTable(new MySQL());
 // print "<pre>";
 // print_r($_SESSION);
 // exit();    
 $auth = Auth::adminCheck();
-
+$token = $table->tokenCsrf();
 ?>
 
 <!DOCTYPE html>
@@ -90,7 +93,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block text-decoration-none">Admin <?= $auth->name ?></a>
+          <a href="#" class="d-block text-decoration-none">Admin <?=  $table->h($auth->name)?></a>
         </div>
       </div>
 
@@ -186,15 +189,19 @@ scratch. This page gets rid of all links and provides the needed markup only.
                           <h3 class="card-title">Create Post</h3>
                         </div>
                         <div class="card-body  bg-gradient">
-                          <form action="actions/create.php" method="post" enctype="multipart/form-data">
+                          <form id="quickForm" action="actions/create.php" method="post" enctype="multipart/form-data">
+                              <?php if(isset($_GET['Required'])) : ?>
+                                <p class="text-danger">*Please fill all contents </p>
+                              <?php endif ?>  
                              <div class="mb-3">
-                                 <label for="title" class="form-label">Title</label>
-                               <input type="text" class="form-control" id="title" name="title" placeholder=" Title" required>
+                                 <label for="exampleInputEmail1" class="form-label">Title</label>
+                               <input type="text" class="form-control" id="exampleInputEmail1" name="title" placeholder=" Title">
                              </div>
+                             <input type="hidden" name="csrf" value="<?= $token ?>"  >
                              <div class="mb-3">
-                                <label for="content" class="form-label">Contents</label><br>
-                                <textarea name="content" id="" cols="30" rows="5"  class="form-control" required></textarea>
-                             </div>
+                               <label for="content" class="form-label">Contents</label><br>
+                               <textarea name="content" id="" cols="30" rows="5"  class="form-control"></textarea>
+                              </div>
                              <?php if(isset($_GET['error'])) : ?>
                               <div class="alert alert-danger">Your photo cannot be uploaded. </div>
                               <?php endif ?>
@@ -243,12 +250,64 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <!-- REQUIRED SCRIPTS -->
   
   <!-- jQuery -->
-  <script src="plugins/jquery/jquery.min.js"></script>
-  <!-- Bootstrap 4 -->
-  <script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="../phpCRUD/js/bootstrap.bundle.js"></script>
-  <!-- AdminLTE App -->
-  <script src="dist/js/adminlte.min.js"></script>
+  <!-- jQuery -->
+<script src="plugins/jquery/jquery.min.js"></script>
+<!-- Bootstrap 4 -->
+<script src="plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
+<!-- jquery-validation -->
+<script src="plugins/jquery-validation/jquery.validate.min.js"></script>
+<script src="plugins/jquery-validation/additional-methods.min.js"></script>
+<!-- AdminLTE App -->
+<script src="dist/js/adminlte.min.js"></script>
+  <script>
+     $('#quickForm').validate({
+    rules: {
+      email: {
+        required: true,
+        email: true,
+      },
+      password: {
+        required: true,
+        minlength: 8
+      },
+      text: {
+        required:true,
+      },
+      Image: {
+        required:true,
+      },
+      terms: {
+        required: true
+      },
+    },
+    messages: {
+      email: {
+        required: "Please enter a email address",
+        email: "Please enter a valid email address"
+      },
+      text:{
+        required: "Please enter a title and content",
+      },
+      password: {
+        required: "Please provide a password",
+        minlength: "Your password must be at least 8 characters long"
+      },
+      terms: "Please accept our terms"
+    },
+    errorElement: 'span',
+    errorPlacement: function (error, element) {
+      error.addClass('invalid-feedback');
+      element.closest('.form-group').append(error);
+    },
+    highlight: function (element, errorClass, validClass) {
+      $(element).addClass('is-invalid');
+    },
+    unhighlight: function (element, errorClass, validClass) {
+      $(element).removeClass('is-invalid');
+    }
+  });
+  </script>
+
   </body>
   </html>
 

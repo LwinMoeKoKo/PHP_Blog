@@ -44,8 +44,7 @@ $totalPages =  ceil(count($allUsers) / $offset);
 $start = ($pageN0-1) * $offset;
 $limitUsers = $table->getUserLimit($start,$offset);
 
-
-
+$token = $table->tokenCsrf();
 ?>
 
 <!DOCTYPE html>
@@ -130,7 +129,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block text-decoration-none">Admin <?= $auth->name ?></a>
+          <a href="#" class="d-block text-decoration-none">Admin <?=  $table->h($auth->name) ?></a>
         </div>
       </div>
 
@@ -223,10 +222,13 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <div class="content-header">
       <div class="container-fluid">
         <div class="row mb-2">
+          <div class="container-fluid">
+            <div class="flex-fill"></div>
+            <div class="float-right">
+              <a class="btn btn-outline-dark" href="addUser.php">Add User</a>
+            </div>
+          </div>
           <div class="col">
-                
-
-
             <!-- <h1 class="my-3 h4">Manage User and Admins</h1> -->
             <div class="card">
               <div class="card-header">
@@ -264,8 +266,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <?php foreach($limitUsers as $user): ?>
                     <tr>
                       <td><?= $i ?> </td>
-                      <td><?= $user->name ?></td>
-                      <td><?= $user->email  ?></td>
+                      <td><?= $table->h($user->name)  ?></td>
+                      <td><?= $table->h($user->email)  ?></td>
                       <td>
                         <?php if($user->role === 1) : ?>
                             <span class="badge bg-gradient-danger">Admin</span>
@@ -284,9 +286,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
                               <a href="actions/changeRole.php?id=<?= $user->id ?>&&role=0" class="text-white text-decoration-none">User</a>
                             </li>
                           </ul>
-                          <a href="edit.php?id=<?= $user->id ?>" class="btn btn-warning">Edit</a>
+                          <a href="editUser.php?id=<?= $user->id ?>" class="btn btn-warning">Edit</a>
                           <?php if($auth->id !== $user->id) : ?>
-                           <a href="actions/deleteUser.php?id=<?= $user->id ?>" class="btn btn-danger" onclick="return confirm('Are You Sure?')">Delete</a>
+                           <a href="actions/deleteUser.php?id=<?= $user->id ?>&csrf=<?= $token ?>" class="btn btn-danger" onclick="return confirm('Are You Sure?')">Delete</a>
                           <?php endif ?>
                         </div>
                       </td>
@@ -348,4 +350,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
 
 
+
+                
+                
 

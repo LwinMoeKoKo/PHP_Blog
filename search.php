@@ -3,6 +3,7 @@ require("vendor/autoload.php");
 use Helpers\Auth;
 use Helpers\HTTP;
 use Libs\Database\MySQL;
+use Libs\Database\PostsTable;
 use Libs\Database\UsersTable;
 // print "<pre>";
 // print_r($_SESSION);
@@ -10,15 +11,16 @@ use Libs\Database\UsersTable;
 $auth = Auth::adminCheck();
 
 $table = new UsersTable(new MySQL());
+$table1 = new PostsTable(new MySQL());
 
 if(isset($_POST['title'])){
   setcookie('search',$_POST['title'],time() + 86400 ,);
 }
-if(isset($_POST['title']) || isset( $_COOKIE['search'])){
+if(isset($_POST['title']) || isset( $_GET['title'])){
   $postTitle = $_POST['title'];
   $pageN0 = 1;
 
-  $title = $postTitle ? $postTitle : $_COOKIE['search']; 
+  $title = $postTitle ? $postTitle : $_GET['title']; 
   
   $allPosts = $table->searchPost($title);
   if($allPosts){
@@ -249,8 +251,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <?php foreach($limitPosts as $post): ?>
                     <tr>
                       <td><?= $i ?> </td>
-                      <td><?= $post->title ?></td>
-                      <td><?= substr($post->content,0,70)  ?>...</td>
+                      <td><?= $table1->h($post->title) ?></td>
+                      <td><?= $table1->h(substr($post->content,0,70))   ?>...</td>
                       <td>
                         <div class="btn-group btn-group-sm">
                           <a href="edit.php?id=<?= $post->id ?>" class="btn btn-dark">Edit</a>
@@ -274,7 +276,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </li>
                     <li class="page-item"><a href="#" class="page-link"><?= $pageN0 ?></a></li>
                     <li class="page-item <?php if($pageN0 >= $totalPages) echo "disabled" ?>">
-                      <a href=" <?php if($pageN0 >= $totalPages) {echo "#";} else { print("?pageNo=".$pageN0+1);} ?>"  class="page-link">Next</a>
+                      <a href=" <?php if($pageN0 >= $totalPages) {echo "#";} else { $pageN0+=1; print("?pageNo=$pageN0&title=$title");} ?>"  class="page-link">Next</a>
                     </li>
                     <?php if($limitPosts < $numOfRecords): ?>
                     <li class="page-item">

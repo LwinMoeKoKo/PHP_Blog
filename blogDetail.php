@@ -17,14 +17,21 @@ $blogId = $_GET['id'];
 $post = $table->getPost($blogId);
 $postId = $post->id;
 $postTable = new PostsTable(new MySQL());
-if(isset($_POST['comment'])){
-  $comment = $_POST['comment'];
- 
-  $result = $postTable->insertComment($comment, $authId, $postId);
-  if($result){
-    HTTP::redirect("/blogDetail.php?id=$blogId");
+if($_POST){
+  if(!($_POST['comment']) ){
+    if(!(($_POST['comment']))){
+      $commentNull = "Please fill the comment";
+    }
+ }  else {
+   $comment = $_POST['comment'];
+  
+   $result = $postTable->insertComment($comment, $authId, $postId);
+   if($result){
+     HTTP::redirect("/blogDetail.php?id=$blogId");
+   }
   }
-};
+ };
+
 
 $allComments = $postTable->getComment($blogId);
 
@@ -61,7 +68,7 @@ $allComments = $postTable->getComment($blogId);
             <!-- Box Comment -->
             <div class="card card-widget">
               <div class="card-header text-center h2 text-lightblue">
-                <?= $post->title ?>
+                <?= $postTable->h($post->title)  ?>
               </div>
               <!-- /.card-header -->
               <div class="card-body">
@@ -70,7 +77,7 @@ $allComments = $postTable->getComment($blogId);
                 <!-- <p>I took this photo this morning. What do you guys think?</p>
                 <button type="button" class="btn btn-default btn-sm"><i class="fas fa-share"></i> Share</button>
                 <button type="button" class="btn btn-default btn-sm"><i class="far fa-thumbs-up"></i> Like</button> -->
-                <p><?= $post->content ?></p>
+                <p><?= $postTable->h($post->content)  ?></p>
                 <a href="blog.php" class="btn btn-outline-secondary">Back</a>
               </div>
               <!-- /.card-body -->
@@ -87,10 +94,10 @@ $allComments = $postTable->getComment($blogId);
                         $author_id = $comment->author_id;
                         $CommenterName = $postTable->getUser($author_id);
                       ?>
-                      <?= $CommenterName->name ?>
+                      <?= $postTable->h($CommenterName->name)  ?>
                       <span class="text-muted float-right"><?= $comment->created_at ?></span>
                     </span><!-- /.username -->
-                    <?= $comment->content ?>
+                    <?= $postTable->h($comment->content) ?>
                   </div>
                   <!-- /.comment-text -->
                 </div>
@@ -99,6 +106,9 @@ $allComments = $postTable->getComment($blogId);
               </div>
               <!-- /.card-footer -->
               <div class="card-footer">
+              <?php if(isset($commentNull)) : ?>
+                  <p class="text-danger">*<?= $commentNull ?> </p>
+               <?php endif ?>                 
                 <form action="" method="post">
                   <img class="img-fluid img-circle img-sm" src="dist/img/user4-128x128.jpg" alt="Alt Text">
                   <!-- .img-push is used to add margin to elements next to floating images -->

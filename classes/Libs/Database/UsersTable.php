@@ -112,8 +112,7 @@ class UsersTable{
              ':image' => $image,
              ':author_id' => $author_id,
            ]);
-           $statement->fetch();
-           return $this->db->lastInsertId();
+           return $this->db->lastInsertId() ?? false;
         } catch (PDOException $e) {
             echo $e->getMessage();
         }
@@ -127,8 +126,7 @@ class UsersTable{
              ':content' => $content,
              ':author_id' => $author_id,
            ]);
-           $statement->fetch();
-           return $this->db->lastInsertId();
+           return $this->db->lastInsertId() ?? false;
         } catch (PDOException $e) {
             echo $e->getMessage();
         }
@@ -144,7 +142,7 @@ class UsersTable{
              ':image' => $image,
              ':id' => $id,
            ]);
-           $row = $statement->fetch();
+           $row = $statement->rowCount();
            return $row ?? false;
         } catch (PDOException $e) {
             echo $e->getMessage();
@@ -153,14 +151,14 @@ class UsersTable{
 
     public function EditPostNoImg($title, $content, $id){
         try {
-           $query = "UPDATE posts SET title =:title,content = :content,updated_at = NOW() WHERE id = :id;";
+           $query = "UPDATE posts SET title =:title,content = :content, updated_at = NOW()  WHERE id = :id;";
            $statement = $this->db->prepare($query);
            $statement->execute([
              ':title' => $title,
              ':content' => $content,
              ':id' => $id,
            ]);
-           $row = $statement->fetch();
+           $row = $statement->rowCount();
            return $row ?? false;
         } catch (PDOException $e) {
             echo $e->getMessage();

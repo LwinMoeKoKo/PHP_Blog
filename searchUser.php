@@ -122,7 +122,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block text-decoration-none">Admin <?= $auth->name ?></a>
+          <a href="#" class="d-block text-decoration-none">Admin <?= $table->h($auth->name) ?></a>
         </div>
       </div>
 
@@ -242,8 +242,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <?php foreach($limitUsers as $user): ?>
                     <tr>
                       <td><?= $i ?> </td>
-                      <td><?= $user->name ?></td>
-                      <td><?= $user->email  ?></td>
+                      <td><?= $table->h($user->name) ?></td>
+                      <td><?= $table->h($user->email ) ?></td>
                       <td>
                         <?php if($user->role === 1) : ?>
                             <span class="badge bg-gradient-danger">Admin</span>

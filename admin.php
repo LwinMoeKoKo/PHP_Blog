@@ -2,6 +2,7 @@
 require("vendor/autoload.php"); 
 use Helpers\Auth;
 use Libs\Database\MySQL;
+use Libs\Database\PostsTable;
 use Libs\Database\UsersTable;
 // print "<pre>";
 // print_r($_SESSION);
@@ -11,6 +12,7 @@ if(empty($_GET['pageNo'])){
   unset($_COOKIE['search']);
   setcookie('search','',time()-1,"/");
 }
+$table1 =new PostsTable(new MySQL());
 
 $table = new UsersTable(new MySQL());
 // if(isset($_GET['title'])){
@@ -51,7 +53,7 @@ $table = new UsersTable(new MySQL());
   
   $limitPosts = $table->getPostsLimit($offset, $numOfRecords);
 
- 
+  $token = $table1->tokenCsrf();
 ?>
 
 <!DOCTYPE html>
@@ -135,7 +137,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <img src="dist/img/user2-160x160.jpg" class="img-circle elevation-2" alt="User Image">
         </div>
         <div class="info">
-          <a href="#" class="d-block">Admin <?= $auth->name ?></a>
+          <a href="#" class="d-block">Admin <?= $table1->h($auth->name)  ?></a>
         </div>
       </div>
 
@@ -235,6 +237,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
             <div class="card">
               <div class="card-header">
                 <h3 class="card-title">Posts   <span class="right badge badge-danger ms-2"><?= count($allPosts) ?></span></h3>
+                <a href="create.php" class="btn btn-outline-success float-right">Create Post</a>
               </div>
               <!-- /.card-header -->
               <div class="card-body">
@@ -245,7 +248,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                         <div class="alert alert-primary">Post is not found on database. </div>
                 <?php endif ?>
                 <?php if(isset($_GET['delete'])): ?>
-                        <div class="alert alert-secondary">User account deleted successfully. </div>
+                        <div class="alert alert-secondary">Post deleted successfully. </div>
                 <?php endif ?>         
                 <?php if(isset($_GET['editSuccess'])): ?>
                         <div class="alert alert-success">Your Post edited successfully. </div>
@@ -264,12 +267,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     <?php foreach($limitPosts as $post): ?>
                     <tr>
                       <td><?= $i ?> </td>
-                      <td><?= $post->title ?></td>
-                      <td><?= substr($post->content,0,70)  ?>...</td>
+                      <td><?= $table1->h($post->title) ?></td>
+                      <td><?= $table1->h(substr($post->content,0,70))   ?>...</td>
                       <td>
                         <div class="btn-group btn-group-sm">
                           <a href="edit.php?id=<?= $post->id ?>" class="btn btn-dark">Edit</a>
-                          <a href="actions/delete.php?id=<?= $post->id ?>" class="btn btn-danger" onclick="return confirm('Are You Sure?')">Delete</a>
+                          <a href="actions/delete.php?id=<?= $post->id ?>&csrf=<?= $token ?>" class="btn btn-danger" onclick="return confirm('Are You Sure?')">Delete</a>
                         </div>
                       </td>
                     </tr>
