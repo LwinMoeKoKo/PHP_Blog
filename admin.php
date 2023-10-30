@@ -8,45 +8,33 @@ use Libs\Database\UsersTable;
 // print_r($_SESSION);
 // exit();    
 $auth = Auth::adminCheck();
-if(empty($_GET['pageNo'])){
-  unset($_COOKIE['search']);
-  setcookie('search','',time()-1,"/");
-}
+// if(empty($_GET['pageNo'])){
+//   unset($_COOKIE['search']);
+//   setcookie('search','',time()-1,"/");
+// }
 $table1 =new PostsTable(new MySQL());
 
 $table = new UsersTable(new MySQL());
-// if(isset($_GET['title'])){
-//   $title = $_POST['title'];
-// $allPosts = $table->searchPost($title);
-// print "<pre>";
-// print_r($allPosts);
-// exit();    
-//    $pageN0 = 1;
-//   if(isset($_GET['pageNo'])){
-//     $pageN0 = $_GET['pageNo'];
-//   } else {
-//     global $pageN0;
-//     $pageNO = 1;
-//   }
-//   $numOfRecords = 1;
-//   $offset= ($pageN0 - 1) * $numOfRecords;
-//   $totalPages = ceil(count($allPosts) / $numOfRecords);
-  
-//   $limitPosts = $table->searchPostLimit($offset, $numOfRecords);
-//   exit();
-// } 
-  
 
+if(isset($_POST['title'])){
+  setcookie("title",$_POST['title'],time()+86400,"/");
+}  else {
+  if(!isset($_GET['pageNo'])){
+   setcookie("title","",time()-1,"/");
+  }
+};
+
+if(isset($_GET['pageNo'])){
+  $pageN0 = $_GET['pageNo'];
+} else {
+  global $pageN0;
+  $pageNO = 1;
+}
+  
+if(!isset($_POST['title']) && !isset($_COOKIE['title'])){
   $allPosts = $table->getPosts();
    $pageN0 = 1;
-  if(isset($_GET['pageNo'])){
-    $pageN0 = $_GET['pageNo'];
-  } else {
-    global $pageN0;
-    unset($_COOKIE['search']);
-    setcookie('search','',time()-1,"/");
-    $pageNO = 5;
-  }
+ 
   $numOfRecords = 5;
   $offset= ($pageN0 - 1) * $numOfRecords;
   $totalPages = ceil(count($allPosts) / $numOfRecords);
@@ -54,6 +42,21 @@ $table = new UsersTable(new MySQL());
   $limitPosts = $table->getPostsLimit($offset, $numOfRecords);
 
   $token = $table1->tokenCsrf();
+} else {
+  $title = $_POST['title'] ?? $_COOKIE['title'];
+  $pageN0 = 1;
+
+  $allPosts = $table->searchPost($title);   
+ 
+  $numOfRecords = 2;
+  $offset= ($pageN0 - 1) * $numOfRecords;
+  $totalPages = ceil(count($allPosts) / $numOfRecords);
+  
+  $limitPosts = $table->searchPostLimit($offset, $numOfRecords,$title);
+}
+ 
+  
+
 ?>
 
 <!DOCTYPE html>
@@ -100,7 +103,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <i class="fas fa-search"></i>
         </a>
         <div class="navbar-search-block">
-          <form class="form-inline" action="search.php" method="post">
+          <form class="form-inline" action="admin.php" method="post">
             <div class="input-group input-group-sm">
               <input class="form-control form-control-navbar" name="title" type="search" placeholder="Search Blogs" aria-label="Search">
               <div class="input-group-append">

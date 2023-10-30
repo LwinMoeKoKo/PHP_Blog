@@ -41,6 +41,6 @@ if($_POST){
     HTTP::redirect("/index.php","success=true");
   }
 }
-  
+ ?> 
    
 

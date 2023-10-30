@@ -18,6 +18,7 @@ if($_GET['csrf'] === $_SESSION['csrf']){
     HTTP::redirect("/usersTable.php","delete=true");
 } else {
     unset($_SESSION['user']);
+    unset($_SESSION['csrf']);
     HTTP::redirect("/index.php");
 }
        

@@ -97,9 +97,11 @@ class PostsTable{
 
     public function searchUser($name){
         try {
-            $query = "SELECT * FROM `users` WHERE name LIKE '%$name%';";
+            $query = "SELECT * FROM `users` WHERE name LIKE :name;";
             $statement = $this->db->prepare($query);
-            $statement->execute();
+            $statement->execute([
+                ":name" => "%$name%",
+            ]);
             return $statement->fetchAll();
         } catch (PDOException $e) {
             echo $e->getMessage();
@@ -108,9 +110,11 @@ class PostsTable{
 
     public function searchUserLimit($name,$start,$length){
         try {
-            $query = "SELECT * FROM `users` WHERE name LIKE '%$name%' LIMIT $start, $length;";
+            $query = "SELECT * FROM `users` WHERE name LIKE :name LIMIT $start, $length;";
             $statement = $this->db->prepare($query);
-            $statement->execute();
+            $statement->execute([
+                ":name" => "%$name%",
+            ]);
             return $statement->fetchAll();
         } catch (PDOException $e) {
             echo $e->getMessage();

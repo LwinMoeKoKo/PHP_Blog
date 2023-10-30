@@ -51,7 +51,7 @@ $allComments = $postTable->getComment($blogId);
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AdminLTE 3 | Widgets</title>
+  <title>Blog Details</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -86,7 +86,7 @@ $allComments = $postTable->getComment($blogId);
                 <?php foreach($allComments as $comment) : ?>
                 <div class="card-comment">
                   <!-- User image -->
-                  <img class="img-circle img-sm" src="dist/img/user4-128x128.jpg" alt="User Image">
+                  <img class="img-circle img-sm" src="dist/img/user3-128x128.jpg" alt="User Image">
 
                   <div class="comment-text">
                     <span class="username">
@@ -110,7 +110,7 @@ $allComments = $postTable->getComment($blogId);
                   <p class="text-danger">*<?= $commentNull ?> </p>
                <?php endif ?>                 
                 <form action="" method="post">
-                  <img class="img-fluid img-circle img-sm" src="dist/img/user4-128x128.jpg" alt="Alt Text">
+                  <img class="img-fluid img-circle img-sm" src="dist/img/user3-128x128.jpg" alt="Alt Text">
                   <!-- .img-push is used to add margin to elements next to floating images -->
                   <div class="img-push">
                     <input type="text" class="form-control form-control-sm" name="comment" placeholder="Press enter to post comment">

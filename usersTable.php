@@ -1,5 +1,7 @@
 <?php
 require("vendor/autoload.php"); 
+
+use Helpers\HTTP;
 use Helpers\Auth;
 use Libs\Database\MySQL;
 use Libs\Database\PostsTable;
@@ -10,27 +12,14 @@ $auth = Auth::adminCheck();
 
 $table = new PostsTable(new MySQL());
 
-$allUsers = $table->getUsers();
-
 $pageN0 = 1;
-
-if(isset($_GET['name'])){
-  $name = $_GET['name']; 
-  $allUsers = $table->searchUser($name);
-  $pageN0 = 1;
-  if(isset($_GET['pageNo'])){
-    global $pageN0;
-    $pageN0 = $_GET['pageNo'];
-  } else {
-    $pageN0 = 1;
+if(isset($_POST['name'])){
+  setcookie("name",$_POST['name'],time()+86400,"/");
+} else {
+  if(!isset($_GET['pageNo'])){
+   setcookie("name","",time()-1,"/");
   }
-  
-  $offset = 5;
-  $totalPages =  ceil(count($allUsers) / $offset);
-  $start = ($pageN0-1) * $offset;
-  $limitUsers = $table->getUserLimit($start,$offset);
-  exit();
-}
+};
 
 if(isset($_GET['pageNo'])){
   global $pageN0;
@@ -39,12 +28,29 @@ if(isset($_GET['pageNo'])){
   $pageN0 = 1;
 }
 
-$offset = 5;
-$totalPages =  ceil(count($allUsers) / $offset);
-$start = ($pageN0-1) * $offset;
-$limitUsers = $table->getUserLimit($start,$offset);
+$allUsers = $table->getUsers();
+ if(!isset($_POST['name']) && !isset($_COOKIE['name'])) {
+  $offset = 5;
+  $totalPages =  ceil(count($allUsers) / $offset);
+  $start = ($pageN0-1) * $offset;
+  $limitUsers = $table->getUserLimit($start,$offset);
+  
+  $token = $table->tokenCsrf();
+} else {
+    $name = $_POST['name'] ?? $_COOKIE['name'];
+    $users = $table->searchUser($name);
+ 
+    $offset = 1;
+    $totalPages =  ceil(count($users) / $offset);
+    $start = ($pageN0-1) * $offset;
+    $limitUsers = $table->searchUserLimit($name,$start,$offset); 
+    
+    $token = $table->tokenCsrf();
 
-$token = $table->tokenCsrf();
+}
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -56,7 +62,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin Dashboard</title>
+  <title>Users Table Page</title>
 
   <!-- Google Font: Source Sans Pro -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
@@ -92,7 +98,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <i class="fas fa-search"></i>
         </a>
         <div class="navbar-search-block">
-          <form class="form-inline" action="searchUser.php" method="post">
+          <form class="form-inline" action="usersTable.php" method="post">
             <div class="input-group input-group-sm">
               <input class="form-control form-control-navbar" name="name" type="search" placeholder="Search user" aria-label="Search">
               <div class="input-group-append">
@@ -135,9 +141,9 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
       <!-- SidebarSearch Form -->
       <div class="form-inline">
-        <form action="" method="post">
+        <form action="usersTable.php" method="post">
           <div class="input-group" data-widget="sidebar-search">
-            <input class="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search" name="name">
+            <input class="form-control form-control-sidebar" type="search" placeholder="Search User" aria-label="Search" name="name">
             <div class="input-group-append">
               <button class="btn btn-sidebar">
                 <i class="fas fa-search fa-fw"></i>

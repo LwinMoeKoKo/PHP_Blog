@@ -90,11 +90,13 @@ class UsersTable{
         }
     }
 
-    public function searchPostLimit($start,$length){
+    public function searchPostLimit($start,$length,$title){
         try {
-           $query = "SELECT * FROM posts WHERE title LIKE '%Why%' ORDER BY id DESC LIMIT $start,$length;";
+           $query = "SELECT * FROM posts WHERE title LIKE :title ORDER BY id DESC LIMIT $start,$length;";
            $statement = $this->db->prepare($query);
-           $statement->execute();
+           $statement->execute([
+             ':title' => "%$title%",
+           ]);
            $row = $statement->fetchAll();
            return $row ?? false;
         } catch (PDOException $e) {
